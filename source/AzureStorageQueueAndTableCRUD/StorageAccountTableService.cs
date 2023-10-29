@@ -1,9 +1,11 @@
 ﻿using Azure;
 using Azure.Data.Tables;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace AzureStorageQueueAndTableCRUD
@@ -33,24 +35,34 @@ namespace AzureStorageQueueAndTableCRUD
         }
 
 
-        public Dictionary<string, string> GetEntitiesWithPartitionKey(string rowKey)
+        public string UpdateTableEntity(T entity)
+        {
+            var tableClientUpdateEntity = _tableClient.UpdateEntityAsync(entity, entity.ETag);
+            tableClientUpdateEntity.Wait();
+            return tableClientUpdateEntity.Result.Status.ToString();
+        }
+
+        public string DeleteTableEntity(T entity)
+        {
+            var tableClientUpdateEntity = _tableClient.DeleteEntityAsync(entity.PartitionKey, entity.RowKey);
+            tableClientUpdateEntity.Wait();
+            return tableClientUpdateEntity.Result.Status.ToString();
+        }
+
+
+        public T GetEntitiesWithRowKeyFromPartition(string rowKey)
         {
             string partitionKeyFilter = $"PartitionKey eq '{_partitionKey}' and RowKey eq '{rowKey}'";
             Pageable<T> pageableEntities = _tableClient.Query<T>(partitionKeyFilter);
             var entity = pageableEntities.FirstOrDefault();
 
-            object entityValue;
-            Dictionary<string, string> entityKeyAndValues = new Dictionary<string, string>();
-            if (entity != null)
-            {
-                var entityKeys = entity;
-                //entityKeys.ForEach(entityKey =>
-                //{
-                //    entity.TryGetValue(entityKey, out entityValue);
-                //    entityKeyAndValues.Add(entityKey.ToString(), entityValue.ToString());
-                //});
-            }
-            return entityKeyAndValues;
+            //Dictionary<string, string> entityDict = new Dictionary<string, string>();
+            //if (entity != null)
+            //{
+            //    var entityJson=JsonConvert.SerializeObject(entity);
+            //    entityDict= JsonConvert.DeserializeObject<Dictionary<string, string>>(entityJson);
+            //}
+            return entity;
         }
 
 

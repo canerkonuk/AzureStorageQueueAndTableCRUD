@@ -10,6 +10,6 @@ namespace AzureStorageQueueAndTableCRUD
     public interface IStorageTableRepository<T> where T : class, ITableEntity, new()
     {
         string AddTableEntity(T entity);
-        Dictionary<string, string> GetEntitiesWithPartitionKey(string rowKey);
+        T GetEntitiesWithRowKeyFromPartition(string rowKey);
     }
 }
